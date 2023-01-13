@@ -50,8 +50,8 @@ while True:
     else:
         if result == 0:
             tokens_create = re.findall("[a-zA-Z][a-zA-Z0-9_]*", command)  
-            print("Tokens of \"CREATE\" command:")
-            print(tokens_create)
+            #print("Tokens of \"CREATE\" command:")
+            #print(tokens_create)
             if tokens_create[1] in tables:
                 print("Error. Table with this name is already exist.")
                 continue
@@ -72,14 +72,14 @@ while True:
                     continue
                 tables[tokens_create[1]] = [tuple(column_names)]
                 table_indexes[tokens_create[1]] = indexes
-                print(tables)
-                print(table_indexes)
+                #print(tables)
+                #print(table_indexes)
         elif result == 1:
             tokens_insert_values = re.findall("\".+?\"",command)
             tokens_insert_name = re.findall("[a-zA-Z][a-zA-Z0-9_]*(?=(?:[^\"]*\"[^\"]*\")*[^\"]*\Z)",command)
-            print("Tokens of \"INSERT\" command:")
-            print(tokens_insert_values)
-            print(tokens_insert_name)
+            #print("Tokens of \"INSERT\" command:")
+            #print(tokens_insert_values)
+            #print(tokens_insert_name)
             table_name = tokens_insert_name[-1]
             if table_name not in tables:
                 print("Error. No such table")
@@ -96,12 +96,13 @@ while True:
                         indexes[column_names[i]].append((len(table)-1,tokens_insert_values[i]))
                         indexes[column_names[i]].sort(key = lambda x: x[1])
             table.append((len(table) - 1,tokens_insert_values))
-            print(tables)
-            print(table_indexes)
+            print("Succesfully inserted 1 row")
+            #print(tables)
+            #print(table_indexes)
         elif result == 2:
             tokens_select = re.findall("[a-zA-Z][a-zA-Z0-9_]*(?=(?:[^\"]*\"[^\"]*\")*[^\"]*\Z)", command)
-            print("Tokens of \"SELECT\" command:")
-            print(tokens_select)
+            #print("Tokens of \"SELECT\" command:")
+            #print(tokens_select)
             table_name = tokens_select[2]
             table = tables[table_name]
             output_table = PrettyTable()
@@ -147,35 +148,36 @@ while True:
                             if check_condition(condition,row[1][index_1],parametr_2):
                                 rows.append(row)
                 if re.search("[Oo][Rr][Dd][Ee][Rr]_[Bb][Yy]", command) != None:
-                    if order_by_index == 3:
-                        rows = table[1:]
-                    rev = False
-                    error_check = 0
-                    for param in tokens_select[:order_by_index:-1]:
-                        if bool(re.match("[Aa][Ss][Cc]",param)) or bool(re.match("[Dd][Ee][Ss][Cc]",param)):
-                            if bool(re.match("[Dd][Ee][Ss][Cc]",param)):
-                                rev = True
-                            continue
-                        if param not in table[0]:
-                            print("Error: Order_by_command parametr - no such column",param)
-                            error_check = 1
-                            break
-                        if param in table_indexes[table_name]:
-                            temp_rows = []
-                            ids = []
-                            indexes = table_indexes[table_name][param]
-                            for i in indexes[:: -1 if rev else 1]:
-                                for row in rows:
-                                    if row[0] == i[0]:
-                                        temp_rows.append(row)
-                                        break
-                            rows = temp_rows
-                        else:
-                            j = table[0].index(param)
-                            rows.sort(key = lambda x: x[1][j], reverse = rev)
+                    if order_by_index < len(tokens_select):
+                        if order_by_index == 3:
+                            rows = table[1:]
                         rev = False
-                    if error_check:
-                        continue  
+                        error_check = 0
+                        for param in tokens_select[:order_by_index:-1]:
+                            if bool(re.match("[Aa][Ss][Cc]",param)) or bool(re.match("[Dd][Ee][Ss][Cc]",param)):
+                                if bool(re.match("[Dd][Ee][Ss][Cc]",param)):
+                                    rev = True
+                                continue
+                            if param not in table[0]:
+                                print("Error: Order_by_command parametr - no such column",param)
+                                error_check = 1
+                                break
+                            if param in table_indexes[table_name]:
+                                temp_rows = []
+                                ids = []
+                                indexes = table_indexes[table_name][param]
+                                for i in indexes[:: -1 if rev else 1]:
+                                    for row in rows:
+                                        if row[0] == i[0]:
+                                            temp_rows.append(row)
+                                            break
+                                rows = temp_rows
+                            else:
+                                j = table[0].index(param)
+                                rows.sort(key = lambda x: x[1][j], reverse = rev)
+                            rev = False
+                        if error_check:
+                            continue  
                 for row in rows:
                     output_table.add_row(row[1])
             print(output_table)
@@ -195,5 +197,3 @@ while True:
 #insert test ("k","t","y");
 #insert test ("k","g","o");
 #select from test order_by a,b;
-
-
